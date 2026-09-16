@@ -4,6 +4,7 @@ import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.media.projection.MediaProjection
+import android.media.projection.MediaProjectionConfig
 import android.media.projection.MediaProjectionManager
 import android.os.Build
 import android.os.Bundle
@@ -81,7 +82,13 @@ class ScreenshotConsentActivity : Activity() {
 
         // Request MediaProjection consent
         val mediaProjectionManager = getSystemService(Context.MEDIA_PROJECTION_SERVICE) as MediaProjectionManager
-        val intent = mediaProjectionManager.createScreenCaptureIntent()
+        // Android 14/15: ohne Config defaultet der Dialog auf "Einzelne App" (App-Picker).
+        // Vollbild anfordern, damit nur noch der "Starten"-Tap übrig bleibt.
+        val intent = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+            mediaProjectionManager.createScreenCaptureIntent(MediaProjectionConfig.createConfigForDefaultDisplay())
+        } else {
+            mediaProjectionManager.createScreenCaptureIntent()
+        }
 
         @Suppress("DEPRECATION")
         startActivityForResult(intent, REQUEST_MEDIA_PROJECTION)
